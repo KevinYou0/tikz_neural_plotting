@@ -2,7 +2,8 @@
 ## Overview
 The code using tikz package to draw 3D neural network models.
 
-| ![pic_mlp](https://github.com/user-attachments/assets/970f021f-05a9-4611-9e20-45e70746e365) | ![pic_CNN](https://github.com/user-attachments/assets/fce18fa1-bfa5-4131-90f0-302681f6b002) | 
+| ![pic_mlp](https://github.com/user-attachments/assets/20674d9b-d261-4891-a98d-3b4f1123c79b) | ![pic_CNN](https://github.com/user-attachments/assets/57a8ac9d-83e8-4ac5-a58c-f3b229c60c53) |
+
 |:--:|:--:|
 | *Drawing of MLP layers* | *Drawing of CNN layers* |
 
