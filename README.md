@@ -17,3 +17,4 @@ The code using tikz package to draw 3D neural network models.
 *PointNet Voting*
 
 ## Usage
+Please refer to the corresponding .tex files for drawing examples. You can customize your own drawings by using the package through the "layers" environment.
