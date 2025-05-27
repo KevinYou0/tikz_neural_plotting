@@ -1,0 +1,98 @@
+\documentclass[border=15pt, multi, tikz]{standalone}
+%\documentclass[tikz,class=IEEEtran]{standalone}
+\usepackage{import}
+\usepackage{scalefnt}
+
+\subimport{./layers/}{init}
+\usetikzlibrary{positioning}
+\usepackage{pifont}
+\usetikzlibrary{decorations.pathreplacing,calligraphy}
+
+\def\ConvColor{gray}
+\def\cluster{rgb:yellow,0;red,5;white,0}
+\def\knna{rgb:green,5}
+\def\knnb{rgb:blue,5}
+\def\knncl{rgb:magenta,5}
+\def\poolsep{0.5}
+
+
+\begin{document}
+
+\makeatletter
+\tikzset{
+    dot diameter/.store in=\dot@diameter,
+    dot diameter=3pt,
+    dot spacing/.store in=\dot@spacing,
+    dot spacing=10pt,
+    dots/.style={
+        line width=\dot@diameter,
+        line cap=round,
+        dash pattern=on 0pt off \dot@spacing
+    }
+}
+\makeatother
+\scalefont{1.2}
+\begin{tikzpicture}
+    [
+        level 1/.style = {black, sibling distance=8cm},
+        level 2/.style = {black, sibling distance=3cm},
+        level 3/.style = {black, sibling distance=1cm},
+        level 4/.style = {black, sibling distance=1cm},
+    ]
+    % 0 layer
+    \node {$(1,0,N-1)$}
+        % left 1st layer
+        child {node {$(1,1,N-2)$}
+            %% left-left 2nd layer
+            child {node {$(1,2,N-3)$}
+                %%% left-left 3rd layer
+                child {node[level 4] {$\ldots$}
+                edge from parent node [left] {\ding{55}}} % 3 edge
+                child {node [level 4]{$\ldots$}
+                edge from parent node [right] {\ding{51}}} % 3 edge
+                child {node [level 4]{$\ldots$}
+                edge from parent node [middle] {\ding{51}}} % 3 edge
+            edge from parent node [left] {\ding{55}}} % 2 edge
+            %% left-mid 2nd layer
+            child {node {$(1,1,N-4)$}
+                %%% left-right 3rd layer
+                child {node [level 4]{$\ldots$}
+                edge from parent node [left] {\ding{55}}}% 3 edge
+                child {node [level 4]{$\ldots$}
+                edge from parent node [right] {\ding{51}}}% 3 edge
+                child {node [level 4]{$\ldots$}
+                edge from parent node [middle] {\ding{51}}}% 3 edge
+            edge from parent node [middle] {\ding{51}}}% 2 edge
+            %% left-right 2nd layer
+            child {node {$(1,0,N-3)$}
+                %%% left-right 3rd layer
+                child {node [level 4]{$\ldots$}
+                edge from parent node [left] {\ding{55}}}% 3 edge
+                child {node [level 4]{$\ldots$}
+                edge from parent node [right] {\ding{51}}}% 3 edge
+            edge from parent node [right] {\ding{51}}}% 2 edge
+        edge from parent node [left] {\ding{55}}} % 1 edge
+        % right 1st layer
+        child {node {$(1,0,N-3)$}
+            %% right-left 2nd layer
+            child {node {$(1,1,N-4)$}
+                %%% right-left 3rd layer
+                child {node [level 4]{$\ldots$}
+                edge from parent node [left] {\ding{55}}}% 3 edge
+                child {node [level 4]{$\ldots$}
+                edge from parent node [right] {\ding{51}}}% 3 edge
+                child {node [level 4]{$\ldots$}
+                edge from parent node [middle] {\ding{51}}}% 3 edge
+            edge from parent node [left] {\ding{55}}}% 2 edge
+             %% right-right 2nd layer
+            child {node {(1,0,N-5)}
+            %% right-right 3rd layer
+                child {node [level 4]{$\ldots$}
+                edge from parent node [left] {\ding{55}}}% 3 edge
+                child {node [level 4]{$\ldots$}
+                edge from parent node [right] {\ding{51}}}% 3 edge
+            edge from parent node [right] {\ding{51}}}% 2 edge
+        edge from parent node [right] {\ding{51}}}% 1 edge
+\end{tikzpicture}
+\label{fixed-mm}
+\end{document}\grid

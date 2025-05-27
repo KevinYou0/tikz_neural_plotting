@@ -1,0 +1,185 @@
+\documentclass[border=15pt, multi, tikz]{standalone}
+%\documentclass[tikz,class=IEEEtran]{standalone}
+\usepackage{import}
+\usepackage{scalefnt}
+
+\subimport{./layers/}{init}
+\usetikzlibrary{positioning}
+\usetikzlibrary{decorations.pathreplacing,calligraphy}
+
+\def\ConvColor{gray}
+\def\cluster{rgb:yellow,0;red,5;white,0}
+\def\knna{rgb:green,5}
+\def\knnb{rgb:blue,5}
+\def\knncl{rgb:magenta,5}
+\def\poolsep{0.5}
+
+
+\begin{document}
+
+\makeatletter
+\tikzset{
+    dot diameter/.store in=\dot@diameter,
+    dot diameter=3pt,
+    dot spacing/.store in=\dot@spacing,
+    dot spacing=10pt,
+    dots/.style={
+        line width=\dot@diameter,
+        line cap=round,
+        dash pattern=on 0pt off \dot@spacing
+    }
+}
+\makeatother
+\scalefont{1.2}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.6]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw Layer Blocks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% image feature extraction
+\pic[shift={(0,5,0)}] at (5,0,0) {Box={name=imagenet,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=10,width=3,depth=10}};
+\node [shift={(0,2,0)},align=center] at (imagenet-east) {image\\segmentation};
+
+% PointNet++
+\pic[shift={(0,0,0)}] at (3,0,0) {Box={name=pn1,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=15,width=5,depth=15}};
+
+\node [shift={(-0.2,-2.5,0)}] at (pn1-east) {feature\\ extraction};
+
+% segmentation mask
+\node [shift={(2,0.5,0)},align=center] at (imagenet-east) {segmentation \\mask};
+
+% feature selection
+\pic[shift={(2.5,0,0)}] at (pn1-east) {Box={name=feat_selection,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=5,width=10,depth=5}};
+\node [shift={(-1,-1.5,0)}, align=center] at (feat_selection-east) {foreground\\feature\\selection};
+
+% clustering block
+\pic[shift={(1,0,0)}] at (feat_selection-east) {Box={name=clustering,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.3,height=5,width=10,depth=5}};
+\node [shift={(-1,-1.5,0)}, align=center] at (clustering-east) {clustering\\(K-mean)};
+
+% clustered features
+\pic[shift={(1,1.2,1.2)}] at (clustering-east) {Box={name=featup1,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.3,height=2,width=10,depth=2}};
+
+\pic[shift={(1,1.2,-1.2)}] at (clustering-east) {Box={name=featup2,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.3,height=2,width=10,depth=2}};
+        
+\pic[shift={(1,-1.2,1.2)}] at (clustering-east) {Box={name=featdown1,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.3,height=2,width=10,depth=2}};
+\pic[shift={(1,-1.2,-1.2)}] at (clustering-east) {Box={name=featdown2,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.3,height=2,width=10,depth=2}};
+
+\draw [decorate,decoration = {calligraphic brace, amplitude=2mm}, ultra thick] (clustering-east)++(1.2,-1.2,0) -- ++(0,2.4,0);
+\draw [decorate,decoration = {calligraphic brace, amplitude=3mm}] (featup1-west)++(1,0.5,0) -- ++(0,0,-2.4);
+
+\node [shift={(1.7,2.6,0)},align=center] at (clustering-east) {features \\in a cluster};
+\draw [dot diameter=2pt,dot spacing=4pt,dots] (featup1-far) -- (featup2-near);
+\draw [dot diameter=2pt,dot spacing=4pt,dots] (featdown1-far) -- (featdown2-near);
+
+\draw [decorate,decoration = {calligraphic brace, amplitude=4mm}, ultra thick] (featup2-east) -- ++(0,0,+2.4);
+\draw [decorate,decoration = {calligraphic brace, amplitude=4mm}, ultra thick] (featdown2-east) -- ++(0,0,+2.4);
+
+% pooling layers
+\pic[shift={(0.8,-1.4,1.2)}] at (featup2-east) {Box={name=maxp,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.3,height=15,width=2,depth=2}};
+
+\node [shift={(0.3,-2.3,0)}, align=center] at (maxp-west) {max\\pooling};
+
+\pic[shift={(1,1.2,0)}] at (maxp-east) {Box={name=cfup,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.3,height=2,width=10,depth=2}};
+\pic[shift={(1,-1.2,0)}] at (maxp-east) {Box={name=cfdown,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.3,height=2,width=10,depth=2}};
+\draw [dot diameter=2pt,dot spacing=4pt,dots] (cfup-south) -- (cfdown-north);
+
+\node [shift={(0,0.7,0)}, align=center] at (cfup-north) {clustered\\features};
+\draw [decorate,decoration = {calligraphic brace, amplitude=2mm}] (cfup-east)++(0.2,0,0) -- ++(0,-2.4,0);
+\draw [decorate,decoration = {calligraphic brace, amplitude=2mm}] (maxp-east)++(0.8,-1.2,0) -- ++(0,2.4,0);
+
+% bin
+\pic[shift={(4.5,0,0)}] at (maxp-east) {Box={name=bin,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=10,width=5,depth=10}};
+\node [shift={(0.5,-2.2,0)}, align=center] at (bin-west) {Region-of-Interest\\proposal\\generation};
+
+\pic[shift={(0.3,6,0)}] at (bin-west) {Box={name=fc1,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=5,width=8,depth=5}};
+\node [shift={(0.7,1.4,0)}, align=center] at (fc1-west) {classification};
+ 
+ % cf scores
+\pic[shift={(2.2,0,0)}] at (bin-east) {Box={name=crop,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=10,width=5,depth=10}};
+\node [shift={(0.4,-2.2,0)},align=center] at (crop-west) {point\\cloud\\cropping};
+
+\pic[shift={(2.2,0,0)}] at (crop-east) {Box={name=cfcal,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=10,width=5,depth=10}};
+\node [shift={(0,-1.2,0)},align=center] at (cfcal-south) {continuous\\function\\score};
+
+\pic[shift={(2,0,0)}] at (cfcal-east) {Box={name=cf2,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=5,width=1,depth=1}};
+\pic[shift={(2,1,0)}] at (cfcal-east) {Box={name=cf1,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=5,width=1,depth=1}};
+\pic[shift={(2,-1,0)}] at (cfcal-east) {Box={name=cf3,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=5,width=1,depth=1}};
+
+\node [shift={(0.1,-3.1,0)},align=center] at (cf1-west) {cf\\scores};
+
+\pic[shift={(0.6,6,0)}] at (cf2-east) {Box={name=combine,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=5,width=2,depth=5}};
+\draw [connection] (cf2-east)  -- node {\midarrow} ++(0.8,0,0)  -- node {\midarrow} (combine-south);
+
+\node [shift={(1,1,0)},align=center] at (combine-east) {refined\\classification \\result};
+%combine all scores
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Draw connections
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\draw [connection]  (0,0,0)    -- node {\midarrow} (pn1-west);
+\draw [connection]  (0,0,0)    -- node {} ++(1,0,0)  -- node {\midarrow} ++(0,-3.6,0)  -- node {\midarrow} ++(22.9,0,0)  -- node {\midarrow} (crop-south);
+\draw [connection]  (pn1-east)    -- node {} ++(1.3,0,0)    -- node {\midarrow}  (imagenet-south);
+
+\node [shift={(1,0.5,0)},align=center] at (0,0,0) {point cloud};
+
+\draw [connection]  (0,5,0)    -- node {\midarrow} (imagenet-west);
+\node [shift={(-4,0.5,0)},align=center] at (imagenet-west) {rgb image};
+
+
+\draw [connection]  (imagenet-east)    -- node {\midarrow} ++(1.9,0,0) -- node {\midarrow} (feat_selection-north);
+
+\draw [connection]  (pn1-east)    -- node {\midarrow} (feat_selection-west);
+\draw [connection]  (feat_selection-east)    -- node {\midarrow} (clustering-west);
+
+
+\draw [connection]  (clustering-east)  -- node {\midarrow} ++(1,0,0);
+
+\draw [connection]  (maxp-east)  -- node {\midarrow} ++(0.6,0,0);
+\draw [connection]  (bin-east)  -- node {\midarrow} (crop-west);
+\draw [connection]  (bin-west)++(-1.1,0,0)  -- node {\midarrow} (bin-west);
+\draw [connection]  (bin-west)++(-0.6,0,0)  -- node {\midarrow} ++(0,6,0)  -- node {\midarrow} (fc1-west);
+
+\node [shift={(2,-0.7,0)},align=center] at (bin-west) {3D\\proposal};
+
+\node [shift={(1.5,4,0)},align=center] at (cf2-east) {To\\second\\ stage};
+
+\draw [dashed, connection]  (bin-east)  -- node{} ++(1,0,0)  -- node {\midarrow} ++(0,5,0)  -- node {\midarrow} ++(12.5,0,0);
+
+\draw [connection]  (crop-east)  -- node{\midarrow} ++(1.9,0,0);
+
+\draw[connection] (fc1-east) -- node {\midarrow} (combine-west);
+\draw[connection] (combine-east) -- node {\midarrow} ++(4,0,0);
+\draw[connection] (cfcal-east) -- node {\midarrow} (cf2-west);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Draw bounding
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\draw[connection] (fc1-east) -- node {\midarrow} (combine-west);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\draw [dot diameter=4pt,dot spacing=6pt,dots, color=blue]
+(-0.2,8,0) -- (25,8,0) -- (25,-5,0) -- (-0.2,-5,0) -- cycle;
+\node [shift={(12.5,-5.5,0)},align=center] at (0,0,0) {fisrt-stage training};
+
+\draw [dot diameter=4pt,dot spacing=6pt,dots, color=blue]
+(25.5,8,0) -- (33.5,8,0) -- (33.5,-5,0) -- (25.5,-5,0) -- cycle;
+\node [shift={(29.5,-5.5,0)},align=center] at (0,0,0) {continuous function to refine classification result};
+\end{tikzpicture}
+\end{document}\grid

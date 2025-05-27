@@ -1,0 +1,239 @@
+\documentclass[border=15pt, multi, tikz]{standalone}
+\usepackage{import}
+\usepackage{scalefnt}
+\subimport{./layers/}{init}
+\usetikzlibrary{positioning}
+\usetikzlibrary{decorations.pathreplacing,calligraphy}
+\usetikzlibrary{calc}
+\def\ConvColor{rgb:yellow,5;red,2.5;white,5}
+\def\ConvReluColor{rgb:yellow,5;red,5;white,5}
+\def\PoolColor{rgb:red,1;black,0.3}
+\def\DcnvColor{rgb:red,9;green,2.5;white,2}
+\def\SoftmaxColor{rgb:magenta,5;black,7}
+\def\SumColor{rgb:blue,5;green,15}
+\def\poolsep{0.5}
+\def\FeatureColor{rgb:blue,5;white,5}
+\def\ArrowColor{rgb:green,5;black,3}
+
+\pgfdeclarelayer{layer0}
+\pgfdeclarelayer{layer1}
+\pgfdeclarelayer{layer2}
+\pgfdeclarelayer{layer3}
+\pgfdeclarelayer{layer4}
+\pgfdeclarelayer{layer5}
+\pgfdeclarelayer{layer6}
+\pgfdeclarelayer{layer7}
+\pgfdeclarelayer{layer8}
+\pgfsetlayers{layer0, layer1, layer2, layer3, layer4, layer5, layer6, layer7, layer8}
+
+\begin{document}
+
+\makeatletter
+
+\tikzset{
+    dot diameter/.store in=\dot@diameter,
+    dot diameter=3pt,
+    dot spacing/.store in=\dot@spacing,
+    dot spacing=10pt,
+    dots/.style={
+        line width=\dot@diameter,
+        line cap=round,
+        dash pattern=on 0pt off \dot@spacing
+    }
+}
+\makeatother
+\scalefont{0.7}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.6]
+
+\newcommand{\crossmark}[1]{%
+  \draw[line width=1pt]
+    ($(#1)+(0.1,0.1,0)$) -- ($(#1)+(-0.1,-0.1,0)$)
+    ($(#1)+(0.1,-0.1,0)$) -- ($(#1)+(-0.1,0.1,0)$);
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Draw First Set
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{pgfonlayer}{layer1}
+    \pic[shift={(0,0,0)}] at (2,0,0) {Box={name=vis_enc,%
+            xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=10,width=3,depth=5}};
+    \pic[shift={(0,3,0)}] at (2, 0 0) {Box={name=f_enc,%
+            xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=10,width=3,depth=5}};
+
+    \pic[shift={(1,0.7,0)}] at (vis_enc-east) {Box={name=vis_f,%
+        xlabel={{"","dummy"}},fill=\FeatureColor,opacity=0.7,height=8,width=2,depth=0.5}};
+    \pic[shift={(1,-0.7,0)}] at (f_enc-east) {Box={name=f_f,%
+        xlabel={{"","dummy"}},fill=\FeatureColor,opacity=0.7,height=8,width=2,depth=0.5}};
+    
+    \pic[shift={(3,-0.3,0)}] at (vis_f-south) {Box={name=vis_fuse,%
+        xlabel={{"","dummy"}},fill=\FeatureColor,opacity=0.7,height=8,width=2,depth=0.5}};
+    \pic[shift={(3,0.3,0)}] at (f_f-north) {Box={name=f_fuse,%
+        xlabel={{"","dummy"}},fill=\FeatureColor,opacity=0.7,height=8,width=2,depth=0.5}};
+
+    \draw [connection]  (vis_enc-east)  -- node {} (vis_f-west);
+        \begin{scope}[shift={(vis_f-west)}, rotate=220]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection]  (f_enc-east)  -- node {} (f_f-west);
+        \begin{scope}[shift={(f_f-west)}, rotate=150]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+
+\end{pgfonlayer}
+
+\begin{pgfonlayer}{layer0}
+    \draw [connection]  (0,0,0)  -- node {} (vis_enc-west);
+        \begin{scope}[shift={(vis_enc-west)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection]  (0,3,0)  -- node {} (f_enc-west);
+        \begin{scope}[shift={(f_enc-west)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+
+    \draw [connection] (vis_f-south)  -- node {} ++(0,-0.3,0)  -- node {} (vis_fuse-west);
+        \begin{scope}[shift={(vis_fuse-west)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection] (f_f-north)  -- node {} ++(0,0.3,0)  -- node {} (f_fuse-west);
+        \begin{scope}[shift={(f_fuse-west)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+
+\end{pgfonlayer}  
+
+\begin{pgfonlayer}{layer2}
+    \pic[shift={(3,0,0)}] at (f_f-south) {Box={name=h_fuse,%
+        xlabel={{"","dummy"}},fill=\SumColor,opacity=0.7,height=8,width=2,depth=0.5}};    
+    \pic[shift={(1,0,0)}] at (f_f-south) {Box={name=fuse_enc,%
+            xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=10,width=3,depth=5}};
+    \pic[shift={(0,0,0)}] at (fuse_enc-east) {Box={name=fuse_relu,%
+            xlabel={{"","dummy"}},fill=\PoolColor,opacity=0.7,height=10,width=1,depth=5}};
+    \draw [connection] (fuse_relu-east)  -- node {} (h_fuse-west);
+        \begin{scope}[shift={(h_fuse-west)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+\end{pgfonlayer}
+
+\begin{pgfonlayer}{layer1}
+    \draw [connection] (f_f-south)  -- node {} (fuse_enc-west);
+        \begin{scope}[shift={(fuse_enc-west)+(0.6,0,0)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+\end{pgfonlayer}
+
+\begin{pgfonlayer}{layer3}
+    \pic[shift={(1.2,0.3,0)}] at (h_fuse-north) {Box={name=W1,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=8,width=3,depth=8}};
+    \pic[shift={(1.2,-0.3,0)}] at (h_fuse-south) {Box={name=W2,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=8,width=3,depth=8}};
+
+    \pic[shift={(1,0,0)}] at (W1-east) {Box={name=weight_1,%
+        xlabel={{"","dummy"}},fill=\DcnvColor,opacity=0.7,height=2,width=2,depth=0.5}};
+    \pic[shift={(1,0,0)}] at (W2-east) {Box={name=weight_2,%
+        xlabel={{"","dummy"}},fill=\DcnvColor,opacity=0.7,height=2,width=2,depth=0.5}};
+
+    \pic[shift={(0.6,0,0)}] at (weight_1-east) {Box={name=n_em_1,%
+        xlabel={{"","dummy"}},fill=\FeatureColor,opacity=0.7,height=8,width=2,depth=0.5}};
+    \pic[shift={(0.6,0,0)}] at (weight_2-east) {Box={name=n_em_2,%
+        xlabel={{"","dummy"}},fill=\FeatureColor,opacity=0.7,height=8,width=2,depth=0.5}};
+
+    \pic[shift={(0.6,-0.3,0)}] at (n_em_1-east) {Box={name=nn_em_1,%
+        xlabel={{"","dummy"}},fill=\SoftmaxColor,opacity=0.7,height=8,width=2,depth=0.5}};
+    \pic[shift={(0.6,0.3,0)}] at (n_em_2-east) {Box={name=nn_em_2,%
+        xlabel={{"","dummy"}},fill=\SoftmaxColor,opacity=0.7,height=8,width=2,depth=0.5}};
+
+    \pic[shift={(1,0,0)}] at (nn_em_1-south) {Box={name=policy,%
+        xlabel={{"","dummy"}},fill=\ConvColor,opacity=0.7,height=8,width=3,depth=8}};
+
+
+    \draw [connection] (W1-east)  -- node {} (weight_1-west);
+        \begin{scope}[shift={(weight_1-west)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection] (W2-east)  -- node {} (weight_2-west);
+        \begin{scope}[shift={(weight_2-west)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+
+    \draw [connection, dashed] (f_fuse-north)  -- node {} ++(0, 0.2, 0)  -- node {} ++(4, 0, 0)  -- node {} (n_em_1-north);
+        \begin{scope}[shift={(n_em_1-north)}, rotate=90]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection, dashed] (vis_fuse-south)  -- node {} ++(0, -0.2, 0)  -- node {} ++(4, 0, 0)  -- node {} (n_em_2-south);
+        \begin{scope}[shift={(n_em_2-south)}, rotate=270]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+
+    \draw [connection] (n_em_1-east)  -- node {} (nn_em_1-west);
+        \begin{scope}[shift={(nn_em_1-west)}, rotate=150]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection] (n_em_2-east)  -- node {} (nn_em_2-west);
+        \begin{scope}[shift={(nn_em_2-west)}, rotate=210]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+
+\end{pgfonlayer}
+
+\begin{pgfonlayer}{layer2}
+    \draw [connection] (h_fuse-east)  -- node {} (W1-west);
+        \begin{scope}[shift={(W1-west)}, rotate=230]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection] (h_fuse-east)  -- node {} (W2-west);
+        \begin{scope}[shift={(W2-west)}, rotate=130]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+
+    \draw [connection] (f_fuse-east)  -- node {} (W1-west);
+        \begin{scope}[shift={(W1-west)}, rotate=140]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection] (vis_fuse-east)  -- node {} (W2-west);
+        \begin{scope}[shift={(W2-west)}, rotate=220]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+    \draw [connection] (nn_em_1-south)  -- node {} (policy-west);
+        \begin{scope}[shift={(policy-west)}, rotate=180]
+            \filldraw[fill=\ArrowColor, draw=none] (0, 0) -- (0.2, 0.1) -- (0.2, -0.1) -- cycle;
+        \end{scope}
+\end{pgfonlayer}
+
+
+\begin{pgfonlayer}{layer0}
+
+    \node [shift={(-1,0.3,0)},align=center] at (f_enc-west) {\fontsize{16}{22}\selectfont force};
+    \node [shift={(-1,-0.3,0)},align=center] at (vis_enc-west) {\fontsize{16}{22}\selectfont visual};
+
+    \node [shift={(0,-0.6,0)},align=center] at (fuse_enc-south) {\fontsize{16}{22}\selectfont $W_s$};
+    
+    \node [shift={(0,0.8,0)},align=center] at (f_enc-north) {\fontsize{16}{22}\selectfont  force \\[3pt] \fontsize{16}{22}\selectfont encoder};
+    \node [shift={(0,-0.8,0)},align=center] at (vis_enc-south) {\fontsize{16}{22}\selectfont 
+    visual \\ [3pt]\fontsize{18}{22}\selectfont  encoder};
+    
+    \node [shift={(-1.2,-0.3,0)},align=center] at (f_fuse-north) {\fontsize{16}{22}\selectfont$em_{force}$};
+    \node [shift={(-1.2,0.3,0)},align=center] at (vis_fuse-south) {\fontsize{16}{22}\selectfont$em_{vis}$};
+    
+    \node [shift={(0,0.6,0)},align=center] at (W1-north) {\fontsize{16}{22}\selectfont $W_1$};
+    \node [shift={(0,-0.6,0)},align=center] at (W2-south) {\fontsize{16}{22}\selectfont $W_2$};
+
+    \node [shift={(0,0.3,0)},align=center] at (weight_1-north) {\fontsize{16}{22}\selectfont $\omega_1$};
+    \node [shift={(0,-0.3,0)},align=center] at (weight_2-south) {\fontsize{16}{22}\selectfont $\omega_2$};
+    
+    \node [shift={(0,-0.6,0)},align=center] at (nn_em_2-south) {\fontsize{16}{22}\selectfont fused \\[3pt] \fontsize{16}{22}\selectfont feature };
+
+    \node [shift={(0,0.8,0)},align=center] at (policy-north) {\fontsize{16}{22}\selectfont policy};
+
+    \draw[line width=2pt]
+      ($(weight_1-east) + (0.3, 0, 0) + (0.2, 0.2, 0)$) -- ($(weight_1-east) + (0.3, 0, 0) + (-0.2, -0.2, 0)$)
+      ($(weight_1-east) + (0.3, 0, 0) + (0.2, -0.2, 0)$) -- ($(weight_1-east) + (0.3, 0, 0) + (-0.2, 0.2, 0)$);
+    \draw[line width=2pt]
+      ($(weight_2-east) + (0.3, 0, 0) + (0.2, 0.2, 0)$) -- ($(weight_2-east) + (0.3, 0, 0) + (-0.2, -0.2, 0)$)
+      ($(weight_2-east) + (0.3, 0, 0) + (0.2, -0.2, 0)$) -- ($(weight_2-east) + (0.3, 0, 0) + (-0.2, 0.2, 0)$);
+    
+\end{pgfonlayer}
+
+\end{tikzpicture}
+\end{document}\grid
