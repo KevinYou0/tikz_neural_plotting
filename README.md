@@ -8,12 +8,12 @@ The code using tikz package to draw 3D neural network models.
 
 | ![pic1](https://github.com/user-attachments/assets/3535626d-847b-461b-9b77-b996a2e760b1) | ![pic_tree](https://github.com/user-attachments/assets/7a7e816d-1658-4936-af12-bb48aed708e0) | 
 |:--:|:--:|
-| *Task Head* | *Binary Tree* |
+| *Task Head* | *Tree* |
 
-![pic_exp](https://github.com/user-attachments/assets/71e4a3ca-6dbe-476b-bde8-ae9bac4a7f47)
+![pic_exp](https://github.com/user-attachments/assets/be58c222-4c7d-4bcf-b646-d2dde08cd56e)
 *Explainable Layer*
 
-![pointnet__](https://github.com/user-attachments/assets/374e4fee-8a72-4e19-b0cd-b7c3ed6e2efe)
+![pointnet__](https://github.com/user-attachments/assets/82d4ba20-0116-412c-845a-26a14f2cbe6e)
 *PointNet Voting*
 
 ## Usage
