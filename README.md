@@ -6,7 +6,7 @@ The code using tikz package to draw 3D neural network models.
 |:--:|:--:|
 | *Drawing of MLP layers* | *Drawing of CNN layers* |
 
-| ![pic1](https://github.com/user-attachments/assets/d8c932f9-83d4-42c5-a025-c515f3ebf6fc) | ![pic_tree](https://github.com/user-attachments/assets/92415791-d3df-441d-a04a-70f4b03b885d) | 
+| ![pic1](https://github.com/user-attachments/assets/3535626d-847b-461b-9b77-b996a2e760b1) | ![pic_tree](https://github.com/user-attachments/assets/7a7e816d-1658-4936-af12-bb48aed708e0) | 
 |:--:|:--:|
 | *Task Head* | *Binary Tree* |
 
